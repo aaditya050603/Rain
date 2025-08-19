@@ -1,1 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Healthcare Chatbot</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+      color: #222;
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .chat-container {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(24,90,157,0.15);
+      padding: 2em;
+      max-width: 400px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+    }
+    h2 {
+      text-align: center;
+      color: #185a9d;
+      margin-bottom: 0.5em;
+    }
+    label {
+      font-weight: 500;
+      color: #185a9d;
+    }
+    textarea {
+      border-radius: 8px;
+      border: 1px solid #43cea2;
+      padding: 0.75em;
+      font-size: 1em;
+      resize: vertical;
+      min-height: 60px;
+      outline: none;
+      transition: border 0.2s;
+    }
+    textarea:focus {
+      border: 1.5px solid #185a9d;
+    }
+    button {
+      background: linear-gradient(90deg, #43cea2 0%, #185a9d 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75em;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(24,90,157,0.08);
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: linear-gradient(90deg, #185a9d 0%, #43cea2 100%);
+    }
+    #response {
+      margin-top: 1em;
+      background: #f4f8fb;
+      color: #222;
+      padding: 1em;
+      border-radius: 8px;
+      min-height: 2em;
+      box-shadow: 0 2px 8px rgba(24,90,157,0.05);
+      font-size: 1em;
+      white-space: pre-line;
+    }
+    .bot-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1em auto;
+      font-size: 2em;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(24,90,157,0.12);
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="bot-avatar">🩺</div>
+    <h2>Healthcare Chatbot</h2>
+    <form id="chatForm">
+      <label for="userInput">Describe your symptoms or ask a health question:</label>
+      <textarea id="userInput" rows="3" required placeholder="e.g. I have a headache and fever..."></textarea>
+      <button type="submit">Ask the Bot</button>
+    </form>
+    <div id="response"></div>
+    <div style="margin-top:1em; font-size:0.95em; color:#185a9d; background:#f9f9f9; border-radius:8px; padding:0.75em; text-align:center; box-shadow:0 2px 8px rgba(24,90,157,0.05);">
+      <strong>Disclaimer:</strong> This chatbot provides general health information and may mention medicines. For accurate, up-to-date medicine details and safe usage, always consult a licensed healthcare professional or trusted medical database.
+    </div>
+  </div>
+  <script>
+    const apiKey = "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";
+    const endpoint = "https://api.groq.com/openai/v1/chat/completions";
+    const model = "meta-llama/llama-4-scout-17b-16e-instruct";
 
+    document.getElementById('chatForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const userInput = document.getElementById('userInput').value.trim();
+      const responseDiv = document.getElementById('response');
+      if (!userInput) {
+        responseDiv.textContent = "Please enter your symptoms or question.";
+        return;
+      }
+      responseDiv.textContent = "Consulting healthcare bot...";
+
+      const payload = {
+        model: model,
+        messages: [{ role: "user", content: userInput }]
+      };
+
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + apiKey
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        responseDiv.textContent =
+          data.choices && data.choices[0] && data.choices[0].message
+            ? data.choices[0].message.content
+            : "No response or error.";
+      } catch (err) {
+        responseDiv.textContent = "Error: " + err;
+      }
+    };
+  </script>
+</body>
+</html>
